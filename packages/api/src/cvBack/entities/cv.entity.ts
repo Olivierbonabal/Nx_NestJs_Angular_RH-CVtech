@@ -1,4 +1,5 @@
 import { TimestampEntities } from "../../Generics/timestamp.entities";
+import { UserEntity } from "src/user/entities/user.entity";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('cv')
@@ -24,6 +25,15 @@ export class CvEntity extends TimestampEntities {
 
   @Column()
   path: string;
+
+   //Bidirectionnel dc entity user tu dois avoir une ligne cv(s)
+    //+tablo d'option bien pratik
+    @ManyToOne( type => UserEntity, (user) => user.cvs, {
+      cascade: ['insert', 'update'],
+       nullable: true,
+        eager: true
+  } )
+  user: UserEntity;
 
   /*************************export ds un fold commun + clean (ex: GENERICS)********** */
   // @CreateDateColumn()
