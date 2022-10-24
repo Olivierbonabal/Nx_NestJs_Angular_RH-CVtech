@@ -29,8 +29,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = await this.userRepository.findOne({ where: { username: payload.username } });
     //si le user existe jle return ds validate & ensuite mis ds le request
     if (user) {
-      const { password, salt, ...result } = user;
-      return result;
+      delete user.salt;
+      delete user.password;
+      return user; 
+      // const { password, salt, ...result } = user;
+      // return result;
+
     } else {
       throw new UnauthorizedException();
     }

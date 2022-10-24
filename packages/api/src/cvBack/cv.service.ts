@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UserEntity } from '../user/entities/user.entity';
 import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { CvEntity } from './entities/cv.entity';
@@ -30,8 +31,10 @@ export class CvService {
 
     /*============ajouter======================*/
 
-    async addCv(cv: AddCvDto): Promise<CvEntity> {
-        return await this.cvRepository.save(cv);
+    async addCv(cv: AddCvDto, user): Promise<CvEntity> {
+        const newCv = this.cvRepository.create(cv);
+        newCv.user = user;
+        return await this.cvRepository.save(newCv);
     }
 
     /*==============update================*/

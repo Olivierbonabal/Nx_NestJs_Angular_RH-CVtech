@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards} from '@nestjs/common';
 import { CvService } from './cv.service';
 import { CvEntity } from './entities/cv.entity';
 import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { JwtAuthGuard } from './../user/Guards/jwt-auth.guard';
+import { request } from 'express';
 
 //je cree une route
 @Controller('cv')
@@ -20,10 +21,11 @@ export class CvController {
     @UseGuards(JwtAuthGuard)
     async addCv(
         @Body() addCvDto: AddCvDto,
-        @Req() req: Request
+         @Req() req: Request
     ): Promise<CvEntity> {
-        console.log('user from request');
-        return await this.CvService.addCv(addCvDto);
+        const user = request.user;
+        // console.log('user extracted from Request', request.user);
+        return await this.CvService.addCv(addCvDto, user);
     }
 
     /*===========================Remove============================*/
@@ -34,7 +36,6 @@ export class CvController {
     // ) {
     //     return this.CvService.removeCv(id);
     // }
-
 
     /*=========================SOFTDelete============================*/
 
@@ -109,4 +110,8 @@ export class CvController {
         const { updateCriteria, updateCvDto } = updateObject;
         return await this.CvService.updateCv2(updateCriteria, updateCvDto);
     }
+}
+
+function User() {
+    throw new Error('Function not implemented.');
 }
