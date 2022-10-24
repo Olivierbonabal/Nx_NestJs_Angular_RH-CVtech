@@ -1,6 +1,6 @@
 import { TimestampEntities } from "../../Generics/timestamp.entities";
-import { UserEntity } from "src/user/entities/user.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { UserEntity } from "../../user/entities/user.entity";
 
 @Entity('cv')
 export class CvEntity extends TimestampEntities {

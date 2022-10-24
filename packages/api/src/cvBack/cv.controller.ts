@@ -1,8 +1,9 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { CvService } from './cv.service';
 import { CvEntity } from './entities/cv.entity';
 import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
+import { JwtAuthGuard } from './../user/Guards/jwt-auth.guard';
 
 //je cree une route
 @Controller('cv')
@@ -16,12 +17,14 @@ export class CvController {
     }
 
     @Post()
+    @UseGuards(JwtAuthGuard)
     async addCv(
-        @Body() addCvDto: AddCvDto
+        @Body() addCvDto: AddCvDto,
+        @Req() req: Request
     ): Promise<CvEntity> {
+        console.log('user from request');
         return await this.CvService.addCv(addCvDto);
     }
-
 
     /*===========================Remove============================*/
 
@@ -63,6 +66,7 @@ export class CvController {
     /*=========================Recover==========================*/
 
     @Get('recover/:id')
+    @UseGuards(JwtAuthGuard)
     async restoreCv(
         @Param('id', ParseIntPipe) id: number) {
         return await this.CvService.restoreCv(id);
@@ -78,6 +82,7 @@ export class CvController {
     /*=========================Delete==========================*/
 
     @Delete(':id')
+    @UseGuards(JwtAuthGuard)
     async deleteCv(
         @Param('id', ParseIntPipe) id: number
     ) {
@@ -87,6 +92,7 @@ export class CvController {
     /*============================================*/
 
     @Patch(':id')
+    @UseGuards(JwtAuthGuard)
     async updateCv(
         @Body() updateCvDto: UpdateCvDto,
         @Param('id', ParseIntPipe) id: number
@@ -96,6 +102,7 @@ export class CvController {
 
     /*=======autre methode (+ precis)=======*/
     @Patch()
+    @UseGuards(JwtAuthGuard)
     async updateCv2(
         @Body() updateObject
     ) {

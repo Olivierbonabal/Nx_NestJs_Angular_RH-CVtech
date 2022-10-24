@@ -8,6 +8,9 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CvModule } from './cvBack/cv.module';
 import * as dotenv from 'dotenv';
+import { UserModule } from './user/user.module';
+import { CvEntity } from './cvBack/entities/cv.entity';
+import { UserEntity } from './user/entities/user.entity';
 
 dotenv.config();
 
@@ -24,11 +27,13 @@ dotenv.config();
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      //pr search en global
-      entities: ["dist/**/*.entity{.ts,.js}"],
+      //pr search en global ==> mais à éviter!!!(apres test...)
+      // entities: ["dist/**/*.entity{.ts,.js}"],
+      entities: [CvEntity, UserEntity],
       synchronize: true,
     }),
-    CvModule
+    CvModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],

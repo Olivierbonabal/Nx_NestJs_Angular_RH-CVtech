@@ -1,7 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { TimestampEntities } from '../../Generics/timestamp.entities';
-import { CvEntity } from "../../cvBack/entities/cv.entity";
 import { UserRoleEnum } from "../../enums/user-role.enum";
+import { CvEntity } from "../../cvBack/entities/cv.entity";
 
 @Entity('user')
 export class UserEntity extends TimestampEntities {
