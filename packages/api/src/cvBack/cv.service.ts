@@ -59,8 +59,10 @@ export class CvService {
             throw new NotFoundException(`Le document avec l'id ${id} est introuvable`);
         }
         //sauvegarde nouvelle entity
-        if (user.role === UserRoleEnum.ADMIN || (cv.user && cv.user.id === user.id))
+        if (user.role === UserRoleEnum.ADMIN || (newCv.user && newCv.user.id === user.id))
         return await this.cvRepository.save(newCv);
+        else
+            new UnauthorizedException('');
     }
 
     /*==============Update2nd==(autre tips+precis)===============*/
