@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Req, UseGuards} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { CvService } from './cv.service';
 import { CvEntity } from './entities/cv.entity';
 import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { JwtAuthGuard } from './../user/Guards/jwt-auth.guard';
 import { request } from 'express';
+import { User } from "../decorator/user.decorator";
+import { UserEntity } from '../user/entities/user.entity';
 
 //je cree une route
 @Controller('cv')
@@ -13,17 +15,23 @@ export class CvController {
     constructor(private CvService: CvService) { }
 
     @Get()
-    async getAllCvs(): Promise<CvEntity[]> {
-        return await this.CvService.getCvs();
+    @UseGuards(JwtAuthGuard)
+    async getAllCvs(
+        // @Request() request: Request
+        @User() user: UserEntity
+    ): Promise<CvEntity[]> {
+        // console.log(request.user);
+        return await this.CvService.getCvs(user);
     }
 
     @Post()
     @UseGuards(JwtAuthGuard)
     async addCv(
         @Body() addCvDto: AddCvDto,
-         @Req() req: Request
+        // @Request() req: Request
+        @User() user: UserEntity
     ): Promise<CvEntity> {
-        const user = request.user;
+        // const user = request.user;
         // console.log('user extracted from Request', request.user);
         return await this.CvService.addCv(addCvDto, user);
     }
@@ -59,7 +67,7 @@ export class CvController {
     //     return await this.CvService.statCvNbrByAge();
     // }
 
-    @Get ('stats')
+    @Get('stats')
     async statCvNbrByAge() {
         return await this.CvService.statCvNbrByAge(65, 18);
     }
@@ -75,9 +83,10 @@ export class CvController {
 
     @Get(":id")
     async getCv(
-        @Param("id", ParseIntPipe) id
+        @Param("id", ParseIntPipe) id,
+        @User() user: UserEntity
     ): Promise<CvEntity> {
-        return await this.CvService.findCvById(id);
+        return await this.CvService.findCvById(id, user);
     }
 
     /*=========================Delete==========================*/
@@ -96,7 +105,8 @@ export class CvController {
     @UseGuards(JwtAuthGuard)
     async updateCv(
         @Body() updateCvDto: UpdateCvDto,
-        @Param('id', ParseIntPipe) id: number
+        @Param('id', ParseIntPipe) id: number,
+        @User() user: UserEntity
     ): Promise<CvEntity> {
         return await this.CvService.updateCv(id, updateCvDto);
     }
@@ -105,13 +115,14 @@ export class CvController {
     @Patch()
     @UseGuards(JwtAuthGuard)
     async updateCv2(
-        @Body() updateObject
+        @Body() updateObject,
+        @User() user: UserEntity
     ) {
         const { updateCriteria, updateCvDto } = updateObject;
         return await this.CvService.updateCv2(updateCriteria, updateCvDto);
     }
 }
 
-function User() {
+function UserError() {
     throw new Error('Function not implemented.');
 }

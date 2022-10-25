@@ -1,10 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { CvEntity } from './entities/cv.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { UserEntity } from '../user/entities/user.entity';
+import { FindOptionsWhere, ObjectID, Repository } from 'typeorm';
 import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
-import { CvEntity } from './entities/cv.entity';
+import { UserEntity } from '../user/entities/user.entity';
+import { User } from '../decorator/user.decorator';
+import { UserRoleEnum } from '../enums/user-role.enum';
 
 @Injectable()
 export class CvService {
@@ -15,18 +17,21 @@ export class CvService {
     ) {
     }
 
-    async findCvById(id: number) {
+    async findCvById(id: number, user) {
         const cv = await this.cvRepository.findOne({ where: { id } });
         if (!cv) {
             throw new NotFoundException(`Le document avec l'id ${id} est introuvable`);
         }
+        if(user.role === UserRoleEnum.ADMIN)
         return cv;
     }
 
-    /*============trouver======================*/
+    /*=================trouver======================*/
 
-    async getCvs(): Promise<CvEntity[]> {
-        return await this.cvRepository.find();
+    async getCvs(user: UserEntity): Promise<CvEntity[]> {
+        if (user.role === UserRoleEnum.ADMIN)
+            return await this.cvRepository.find();
+            return await this.cvRepository.find({ user });
     }
 
     /*============ajouter======================*/
@@ -34,10 +39,10 @@ export class CvService {
     async addCv(cv: AddCvDto, user): Promise<CvEntity> {
         const newCv = this.cvRepository.create(cv);
         newCv.user = user;
-        return await this.cvRepository.save(newCv);
+        await this.cvRepository.save(newCv);
     }
 
-    /*==============update================*/
+    /*==============update=======================*/
 
     async updateCv(id: number, cv: UpdateCvDto): Promise<CvEntity> {
         //en preload je recupere le cv id et je remplace les vieilles valeur par newcv(--passé en parametre)
@@ -62,7 +67,7 @@ export class CvService {
 
     /*===================Remove=====================*/
 
-    async removeCv(id) {
+    async removeCv(id: number): Promise<CvEntity> {
         const cvToRemove = await this.findCvById(id);
         return await this.cvRepository.remove(cvToRemove);
     }
@@ -104,7 +109,7 @@ export class CvService {
     //     //comment je les recupr (attention o valeurs de retour(getOne, getRawOne, getMany, getRawMany))
     //     return await qb.getRawMany();
     // }
-    async statCvNbrByAge (maxAge, minAge = 0) {
+    async statCvNbrByAge(maxAge: number, minAge = 0) {
 
         const qb = this.cvRepository.createQueryBuilder('cv');
         qb.select("cv.age, count(cv.id) as CvQuantity")

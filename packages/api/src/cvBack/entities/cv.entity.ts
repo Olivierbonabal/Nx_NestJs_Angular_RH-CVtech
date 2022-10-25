@@ -35,6 +35,7 @@ export class CvEntity extends TimestampEntities {
    }
   )
   user: UserEntity;
+    newCv: Express.User;
 }
 
   /*************************export ds un fold commun + clean (ex: GENERICS)********** */
