@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CvEntity } from './entities/cv.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, ObjectID, Repository } from 'typeorm';
 import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { UserEntity } from '../user/entities/user.entity';
-import { User } from '../decorator/user.decorator';
 import { UserRoleEnum } from '../enums/user-role.enum';
 
 @Injectable()
@@ -17,13 +17,16 @@ export class CvService {
     ) {
     }
 
-    async findCvById(id: number, user) {
+    async findCvById(id: number, user: UserEntity) {
         const cv = await this.cvRepository.findOne({ where: { id } });
         if (!cv) {
             throw new NotFoundException(`Le document avec l'id ${id} est introuvable`);
         }
-        if(user.role === UserRoleEnum.ADMIN)
-        return cv;
+        //si je suis admin ou je suis admin mais g pas de user
+        if (user.role === UserRoleEnum.ADMIN || (cv.user && cv.user.id === user.id))
+            return cv;
+        else
+            throw new UnauthorizedException();
     }
 
     /*=================trouver======================*/
@@ -31,12 +34,12 @@ export class CvService {
     async getCvs(user: UserEntity): Promise<CvEntity[]> {
         if (user.role === UserRoleEnum.ADMIN)
             return await this.cvRepository.find();
-            return await this.cvRepository.find({ user });
+        return await this.cvRepository.find({ user });
     }
 
-    /*============ajouter======================*/
+    /*==================ajouter======================*/
 
-    async addCv(cv: AddCvDto, user): Promise<CvEntity> {
+    async addCv({ cv, user }: { cv: AddCvDto; user: UserEntity; }): Promise<CvEntity> {
         const newCv = this.cvRepository.create(cv);
         newCv.user = user;
         await this.cvRepository.save(newCv);
@@ -44,7 +47,7 @@ export class CvService {
 
     /*==============update=======================*/
 
-    async updateCv(id: number, cv: UpdateCvDto): Promise<CvEntity> {
+    async updateCv(id: number, cv: UpdateCvDto, user: UserEntity): Promise<CvEntity> {
         //en preload je recupere le cv id et je remplace les vieilles valeur par newcv(--passé en parametre)
         const newCv = await this.cvRepository.preload({
             id,
@@ -56,21 +59,22 @@ export class CvService {
             throw new NotFoundException(`Le document avec l'id ${id} est introuvable`);
         }
         //sauvegarde nouvelle entity
+        if (user.role === UserRoleEnum.ADMIN || (cv.user && cv.user.id === user.id))
         return await this.cvRepository.save(newCv);
     }
 
     /*==============Update2nd==(autre tips+precis)===============*/
 
-    updateCv2(updateCriteria, cv: UpdateCvDto) {
+    updateCv2(updateCriteria: string | number | string[] | Date | ObjectID | number[] | Date[] | ObjectID[] | FindOptionsWhere<CvEntity>, cv: UpdateCvDto) {
         return this.cvRepository.update(updateCriteria, cv);
     }
 
     /*===================Remove=====================*/
 
-    async removeCv(id: number): Promise<CvEntity> {
-        const cvToRemove = await this.findCvById(id);
-        return await this.cvRepository.remove(cvToRemove);
-    }
+    // async removeCv(id: number): Promise<CvEntity> {
+    //     const cvToRemove = await this.findCvById(id);
+    //     return await this.cvRepository.remove(cvToRemove);
+    // }
 
     /*===================SOFTDelete===================*/
 

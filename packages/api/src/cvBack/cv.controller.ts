@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Request, UseGuards } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { CvService } from './cv.service';
 import { CvEntity } from './entities/cv.entity';
 import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { JwtAuthGuard } from './../user/Guards/jwt-auth.guard';
-import { request } from 'express';
 import { User } from "../decorator/user.decorator";
 import { UserEntity } from '../user/entities/user.entity';
 
@@ -33,7 +33,7 @@ export class CvController {
     ): Promise<CvEntity> {
         // const user = request.user;
         // console.log('user extracted from Request', request.user);
-        return await this.CvService.addCv(addCvDto, user);
+        return await this.CvService.addCv({ cv: addCvDto, user });
     }
 
     /*===========================Remove============================*/
@@ -45,14 +45,6 @@ export class CvController {
     //     return this.CvService.removeCv(id);
     // }
 
-    /*=========================SOFTDelete============================*/
-
-    @Delete(':id')
-    async softDeleteCv(
-        @Param('id', ParseIntPipe) id: number
-    ) {
-        return this.CvService.softDeleteCv(id);
-    }
 
 
     /*===============Chercher le nombre de CV pr tranche d'age=============*/
@@ -68,6 +60,7 @@ export class CvController {
     // }
 
     @Get('stats')
+    @UseGuards(JwtAuthGuard)
     async statCvNbrByAge() {
         return await this.CvService.statCvNbrByAge(65, 18);
     }
@@ -82,6 +75,7 @@ export class CvController {
     }
 
     @Get(":id")
+    @UseGuards(JwtAuthGuard)
     async getCv(
         @Param("id", ParseIntPipe) id,
         @User() user: UserEntity
@@ -99,6 +93,15 @@ export class CvController {
         return this.CvService.deleteCv(id);
     }
 
+    /*=========================SOFTDelete============================*/
+
+    @Delete(':id')
+    @UseGuards(JwtAuthGuard)
+    async softDeleteCv(
+        @Param('id', ParseIntPipe) id: number
+    ) {
+        return this.CvService.softDeleteCv(id);
+    }
     /*============================================*/
 
     @Patch(':id')
@@ -108,7 +111,7 @@ export class CvController {
         @Param('id', ParseIntPipe) id: number,
         @User() user: UserEntity
     ): Promise<CvEntity> {
-        return await this.CvService.updateCv(id, updateCvDto);
+        return await this.CvService.updateCv(id, updateCvDto, user);
     }
 
     /*=======autre methode (+ precis)=======*/
