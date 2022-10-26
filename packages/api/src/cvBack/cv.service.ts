@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CvEntity } from './entities/cv.entity';
@@ -7,13 +8,15 @@ import { AddCvDto } from './dto/Add-cv.dto';
 import { UpdateCvDto } from './dto/update-cv.dto';
 import { UserEntity } from '../user/entities/user.entity';
 import { UserRoleEnum } from '../enums/user-role.enum';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class CvService {
     // findCvById: any;
     constructor(
         @InjectRepository(CvEntity)
-        private cvRepository: Repository<CvEntity>
+        private cvRepository: Repository<CvEntity>,
+        private userService: UserService
     ) {
     }
 
@@ -23,7 +26,7 @@ export class CvService {
             throw new NotFoundException(`Le document avec l'id ${id} est introuvable`);
         }
         //si je suis admin ou je suis admin mais g pas de user
-        if (user.role === UserRoleEnum.ADMIN || (cv.user && cv.user.id === user.id))
+        if (this.userService.isOwnerOrAdmin(cv, user))
             return cv;
         else
             throw new UnauthorizedException();
@@ -43,6 +46,7 @@ export class CvService {
         const newCv = this.cvRepository.create(cv);
         newCv.user = user;
         await this.cvRepository.save(newCv);
+        return newCv;
     }
 
     /*==============update=======================*/
@@ -59,8 +63,8 @@ export class CvService {
             throw new NotFoundException(`Le document avec l'id ${id} est introuvable`);
         }
         //sauvegarde nouvelle entity
-        if (user.role === UserRoleEnum.ADMIN || (newCv.user && newCv.user.id === user.id))
-        return await this.cvRepository.save(newCv);
+        if (this.userService.isOwnerOrAdmin(newCv, user))
+            return await this.cvRepository.save(newCv);
         else
             new UnauthorizedException('');
     }
@@ -80,14 +84,29 @@ export class CvService {
 
     /*===================SOFTDelete===================*/
 
-    async softDeleteCv(id: number) {
-        return this.cvRepository.softDelete(id);
+    async softDeleteCv({ id, user }: { id: number, user: UserEntity; }) {
+        const cv = await this.cvRepository.findOne({ id });
+        console.log('cv', cv);
+        if (!cv) {
+            throw new NotFoundException('');
+        }
+        if (this.userService.isOwnerOrAdmin(cv, user))
+            return this.cvRepository.softDelete(id);
+        else
+            throw new UnauthorizedException('');
     }
 
     /*===================Recover======================*/
 
-    async restoreCv(id: number) {
-        this.cvRepository.restore(id);
+    async restoreCv(id: number, user) {
+        const cv = await this.cvRepository.query("select * from cv where id = ?", [id]);
+        if (!cv) {
+            throw new NotFoundException('');
+        }
+        if (this.userService.isOwnerOrAdmin(cv, user))
+            return this.cvRepository.restore(id);
+        else
+            throw new UnauthorizedException('');
     }
 
     /*==================Delete=======================*/

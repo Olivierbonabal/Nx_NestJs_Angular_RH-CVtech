@@ -6,6 +6,7 @@ import { UserEntity } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { LoginCredentialsDto } from './dto/login-credentials.dto';
 import { JwtService } from '@nestjs/jwt';
+import { UserRoleEnum } from '../enums/user-role.enum';
 
 @Injectable()
 export class UserService {
@@ -111,4 +112,8 @@ export class UserService {
     //         throw new NotFoundException("username ou mdp incorrect");
     //     }
     // }
+
+    isOwnerOrAdmin(objet, user) {
+        return user.role === UserRoleEnum.ADMIN || (objet.user && objet.user.id === user.id)
+    }
 }

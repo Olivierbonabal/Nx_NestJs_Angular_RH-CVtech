@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from "typeorm";
 import { TimestampEntities } from '../../Generics/timestamp.entities';
 import { UserRoleEnum } from "../../enums/user-role.enum";

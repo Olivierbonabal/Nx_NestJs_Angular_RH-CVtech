@@ -2,16 +2,18 @@ import { Type } from "class-transformer";
 import { IsNotEmpty, IsNumber, IsOptional, IsString, Max, Min } from "class-validator";
 
 export class UpdateCvDto {
-    [x: string]: boolean;
 
+    @IsNotEmpty()
     @IsString()
     @IsOptional()
     name: string;
 
+    @IsNotEmpty()
     @IsString()
     @IsOptional()
     firstname: string;
 
+    @IsNotEmpty()
     @IsOptional()
     @Type(() => Number)
     @IsNumber()
@@ -24,10 +26,12 @@ export class UpdateCvDto {
     @IsNumber()
     cin: number;
 
+    @IsNotEmpty()
     @IsOptional()
     @IsString()
     job: string;
 
+    
     @IsOptional()
     @IsString()
     path: string;

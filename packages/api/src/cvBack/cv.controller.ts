@@ -45,8 +45,6 @@ export class CvController {
     //     return this.CvService.removeCv(id);
     // }
 
-
-
     /*===============Chercher le nombre de CV pr tranche d'age=============*/
 
     // @Get('stats/:max/:min')
@@ -70,9 +68,13 @@ export class CvController {
     @Get('recover/:id')
     @UseGuards(JwtAuthGuard)
     async restoreCv(
-        @Param('id', ParseIntPipe) id: number) {
-        return await this.CvService.restoreCv(id);
+        @Param('id', ParseIntPipe) id: number, 
+        @User() user
+        ) {
+        return await this.CvService.restoreCv(id, user);
     }
+
+    /*======================================================*/
 
     @Get(":id")
     @UseGuards(JwtAuthGuard)
@@ -88,7 +90,8 @@ export class CvController {
     @Delete(':id')
     @UseGuards(JwtAuthGuard)
     async deleteCv(
-        @Param('id', ParseIntPipe) id: number
+        @Param('id', ParseIntPipe) id: number,
+        @User() user: UserEntity
     ) {
         return this.CvService.deleteCv(id);
     }
@@ -98,10 +101,12 @@ export class CvController {
     @Delete(':id')
     @UseGuards(JwtAuthGuard)
     async softDeleteCv(
-        @Param('id', ParseIntPipe) id: number
+        @Param('id', ParseIntPipe) id: number,
+        @User() user: UserEntity
     ) {
-        return this.CvService.softDeleteCv(id);
+        return this.CvService.softDeleteCv({ id, user });
     }
+
     /*============================================*/
 
     @Patch(':id')
